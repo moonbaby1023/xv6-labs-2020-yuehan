@@ -1,9 +1,2 @@
-lalala
-222
-333
-#include
-second line
-third line
-test
-ttst
-hahahah
+lSDFA
+dfa
