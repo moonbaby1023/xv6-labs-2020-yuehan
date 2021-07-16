@@ -2,42 +2,43 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 
-char buf[512];
-
-void
-cat(int fd)
+int a2i(const char *s)
 {
-  int n;
+    int n;
 
-  while((n = read(fd, buf, sizeof(buf))) > 0) {
-    if (write(1, buf, n) != n) {
-      fprintf(2, "cat: write error\n");
-      exit(1);
+    n = 0;
+    while (1)
+    {
+        if ('0'<=*s && *s<='9')
+            n = n*10 + *s++ - '0';
+        else if (*s==0)
+            return n;
+        else
+        {
+            return -1;// ==-1 means error happend. >=0 means normally working
+        }
     }
-  }
-  if(n < 0){
-    fprintf(2, "cat: read error\n");
-    exit(1);
-  }
+
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-  int fd, i;
+    if (argc==2)
+    {
+        char *c;
+        c = argv[1];
+        int n = 0;
+        n = a2i(c);
 
-  if(argc <= 1){
-    cat(0);
-    exit(0);
-  }
-
-  for(i = 1; i < argc; i++){
-    if((fd = open(argv[i], 0)) < 0){
-      fprintf(2, "cat: cannot open %s\n", argv[i]);
-      exit(1);
+        if (n>0)
+            sleep(n);
+        else
+            printf("error: you must input a number\nthe process has exited\n");   
     }
-    cat(fd);
-    close(fd);
-  }
-  exit(0);
+    else if (argc<2)
+        printf("error: lacking time parameter\nthe process has exited\n");
+    else
+        printf("error: too many parameters\nthe process has exited\n");
+
+exit(0);
 }
