@@ -28,10 +28,13 @@ int main(int argc, char *argv[])
         char *c;
         c = argv[1];
         int n = 0;
-        n = a2i(c);
-
+        //n = a2i(c); //DIY
+        n = atoi(c); // given library
         if (n>0)
+        {
+            //n = -1;  // what is the standard...
             sleep(n);
+        }          
         else
             printf("error: you must input a number\nthe process has exited\n");   
     }
