@@ -1,43 +1,67 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
-#include "user/user.h"
+#include "user/user.h" // for fork(), pipe(), etc...
 
-char buf[512];
-
-void
-cat(int fd)
+int main(int argc, char* argv[])
 {
-  int n;
+    int p_p2c[2], p_c2p[2]; // file descripters: p0 for input pipe; p1 for the output pipe
+    pipe(p_p2c);
+    pipe(p_c2p);
 
-  while((n = read(fd, buf, sizeof(buf))) > 0) {
-    if (write(1, buf, n) != n) {
-      fprintf(2, "cat: write error\n");
-      exit(1);
+    int pid;
+    pid = fork();
+
+    if (pid == 0)// child: receive, print ping
+    {
+        char cbuf;// child's read buffer
+        int flagr;
+        flagr = read(p_p2c[0], &cbuf, 1);
+        if (flagr==1)
+            printf("%d: received ping\n", getpid());
+        else
+        {
+            printf("error: ping read\n");
+            exit(1);
+        }
+
+        int flagw;
+        flagw = write(p_c2p[1], "2", 1);
+        close(p_c2p[1]);
+        if (flagw != 1)
+        {
+            printf("error: ping write\n");
+            exit(1);
+        }
     }
-  }
-  if(n < 0){
-    fprintf(2, "cat: read error\n");
-    exit(1);
-  }
-}
+    else if(pid > 0) // parent: send, receive, print pong
+    {
+        int flagw;
+        flagw = write(p_p2c[1], "1", 1);
+        close(p_p2c[1]);
+        if (flagw != 1)
+        {
+            printf("error: ping write\n");
+            exit(1);
+        }
 
-int
-main(int argc, char *argv[])
-{
-  int fd, i;
-
-  if(argc <= 1){
-    cat(0);
+        char pbuf;// parent's read buffer
+        int flagr;
+        flagr = read(p_c2p[0], &pbuf, 1);
+        if (flagr==1)
+            printf("%d: received pong\n", getpid());
+        else
+        {
+            printf("error: pong read\n");
+            exit(1);
+        }
+    }
+    else
+    {
+        printf("fork error\n");
+        exit(1); // void exit(int status), int wait(int* status);
+    }
+        
+   
+    
     exit(0);
-  }
-
-  for(i = 1; i < argc; i++){
-    if((fd = open(argv[i], 0)) < 0){
-      fprintf(2, "cat: cannot open %s\n", argv[i]);
-      exit(1);
-    }
-    cat(fd);
-    close(fd);
-  }
-  exit(0);
 }
