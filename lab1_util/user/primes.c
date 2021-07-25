@@ -16,7 +16,7 @@ void new_pipe_proc(int *leftPipe){// // what should the current process do
         exit(0);// no more neighbor process is needed, if the left neighbor passes only one number to the current process 
     else if (flagread<0){
         printf("error: read n from the leftpipe\n");
-        exit(1);
+        exit(0);
     }
     else{       
         int rightPipe[2];// create new pipe on the right
@@ -54,8 +54,7 @@ int main(){
     int pid;
     pid = fork();
     if (pid==0){
-        new_pipe_proc(p);
-        exit(0);
+        new_pipe_proc(p);  
     }
     else if (pid>0){// what the leftmost process should do: 
         close(p[0]);
@@ -72,6 +71,7 @@ int main(){
         exit(1);
     }
     
+    exit(0); //if this line is not added, error: control reaches end of non-void function
     printf("haha\n");
     
 }
